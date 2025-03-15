@@ -2,27 +2,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const timeScaleSelect = document.getElementById('timeScale');
     const volumeChartCanvas = document.getElementById('volumeChart');
     const historyTableBody = document.querySelector('#historyTable tbody');
+
     let chart;
+    let gesboxData = [];
 
-    // Fonction pour convertir les virgules en points (ex: "0,65" → 0.65)
-    function parseFrenchDecimal(str) {
-        return parseFloat(str.replace(',', '.'));
-    }
+    // Remplacez cette URL par l'URL de votre feuille Google Sheets publiée au format CSV
+    const googleSheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTq76nAzQ1hHt1bcPoaq9Azm4LFdOEsnd7d7lXakDdCKdoOfpA-S1DXi52bsKLIRQU2aUrPFX3A-Mq6/pub?output=csv";
 
-    // Fonction pour convertir les dates françaises (jj/mm/aaaa)
-    function parseFrenchDate(dateStr) {
-        const [day, month, year] = dateStr.split('/');
-        return new Date(`${month}/${day}/${year}`).getTime() / 1000;
-    }
-
-    function updateChart(data) {
+    function updateChart() {
         const timeScale = timeScaleSelect.value;
         if (chart) chart.destroy();
 
-        const validData = data
-            .filter(item => 
-                typeof item.timestamp === 'number' && 
-                typeof item.volume === 'number'
+        const validData = gesboxData
+            .filter(item =>
+                typeof item.timestamp === 'number' &&
+                typeof item.volume === 'number' &&  // volume est le volume instantané
+                typeof item.volume_cumule === 'number' // volume_cumule est le volume cumulé
             )
             .sort((a, b) => a.timestamp - b.timestamp);
 
@@ -33,19 +28,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const dataPoints = validData.map(item => ({
             x: item.timestamp * 1000,
-            y: item.volume
+            y: item.volume_cumule  // Affiche le volume cumulé dans le graphique
         }));
 
         chart = new Chart(volumeChartCanvas, {
             type: 'line',
-            data: { datasets: [{ 
-                label: 'Volume (L)',
-                data: dataPoints,
-                borderColor: 'blue',
-                fill: false,
-                pointRadius: 0,
-                hitRadius: 0 
-            }] },
+            data: {
+                datasets: [{
+                    label: 'Volume Cumulé (L)', // Modifiez le label du graphique
+                    data: dataPoints,
+                    borderColor: 'blue',
+                    fill: false,
+                    pointRadius: 0,
+                    hitRadius: 0
+                }]
+            },
             options: {
                 scales: {
                     x: {
@@ -61,72 +58,93 @@ document.addEventListener('DOMContentLoaded', () => {
                             },
                             tooltipFormat: 'dd/MM/yyyy HH:mm'
                         },
-                        adapters: { date: { locale: window.frLocale } },
-                        ticks: { autoSkip: false, maxRotation: 45 },
-                        title: { display: true, text: 'Date/Heure' }
+                        adapters: {
+                            date: {
+                                locale: window.frLocale
+                            }
+                        },
+                        ticks: {
+                            autoSkip: false,
+                            maxRotation: 45,
+                            source: 'data'
+                        },
+                        title: {
+                            display: true,
+                            text: 'Date/Heure'
+                        }
                     },
-                    y: { title: { display: true, text: 'Volume d\'eau (L)' } }
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Volume d\'eau Cumulé (L)' // Modifiez le label de l'axe Y
+                        }
+                    }
                 }
             }
         });
     }
 
-    function updateHistoryTable(data) {
-        historyTableBody.innerHTML = '';
-        let cumulativeVolume = 0;
-
-        data.forEach(item => {
-            if (typeof item.volume !== 'number' || typeof item.timestamp !== 'number') {
-                console.error("Données invalides :", item);
-                return;
-            }
-            const row = historyTableBody.insertRow();
-            const volumeCell = row.insertCell();
-            const cumulativeCell = row.insertCell();
-            const dateCell = row.insertCell();
-
-            cumulativeVolume += item.volume;
-            const date = new Date(item.timestamp * 1000);
-
-            volumeCell.textContent = item.volume.toFixed(2);
-            cumulativeCell.textContent = cumulativeVolume.toFixed(2);
-            dateCell.textContent = date.toLocaleString('fr-FR');
-        });
-    }
-
-    async function fetchDataFromGoogleSheets() {
-        const sheetId = "1-hUrnHF0h_8kR4lPk4OxkoJ894tNKZ3rI3z-aydpp2s";
-        const apiKey = "AIzaSyCUZvlXiW-EvSzAc1DQ-RJk7sPw640LYAQ";
-        const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/A1:D100?key=${apiKey}`;
-
-        try {
-            const response = await fetch(url);
-            const data = await response.json();
-            const rows = data.values.slice(1); // Ignorer les en-têtes
-
-            const formattedData = rows.map(row => ({
-                gesBoxId: row[0],
-                volume: parseFrenchDecimal(row[1]),
-                timestamp: parseFrenchDate(row[2]),
-                cumulativeVolume: parseFrenchDecimal(row[3])
-            })).filter(item => 
-                !isNaN(item.volume) && 
-                !isNaN(item.timestamp)
-            );
-
-            gesboxData = formattedData;
-            updateChart(formattedData);
-            updateHistoryTable(formattedData);
-        } catch (error) {
-            console.error("Erreur lors de la récupération des données :", error);
+    function updateHistoryTable(volume, volume_cumule, timestamp) {  // Ajoute volume_cumule
+        if (typeof volume !== 'number' || typeof volume_cumule !== 'number' || typeof timestamp !== 'number') { // Ajoute volume_cumule
+            console.error("Données invalides :", { volume, volume_cumule, timestamp }); // Ajoute volume_cumule
+            return;
         }
+
+        const row = historyTableBody.insertRow();
+        const volumeCell = row.insertCell();
+        const volumeCumuleCell = row.insertCell();  // Nouvelle cellule pour le volume cumulé
+        const dateCell = row.insertCell();
+
+        const date = new Date(timestamp * 1000);
+        volumeCell.textContent = volume.toFixed(2); // Affiche le volume instantané
+        volumeCumuleCell.textContent = volume_cumule.toFixed(2); // Affiche le volume cumulé
+        dateCell.textContent = date.toLocaleString();
     }
 
     if (timeScaleSelect) {
-        timeScaleSelect.addEventListener('change', fetchDataFromGoogleSheets);
+        timeScaleSelect.addEventListener('change', updateChart);
     } else {
         console.error("Élément timeScaleSelect non trouvé !");
     }
 
-    fetchDataFromGoogleSheets(); // Chargement initial
+    function fetchDataFromGoogleSheets() {
+        fetch(googleSheetURL)
+            .then(response => response.text())
+            .then(csvData => {
+                gesboxData = [];
+                historyTableBody.innerHTML = '';
+
+                const lines = csvData.split('\n');
+                const headers = lines[0].split(',');
+
+                for (let i = 1; i < lines.length; i++) {
+                    const data = lines[i].split(',');
+                    if (data.length === headers.length) {
+                        const item = {};
+                        for (let j = 0; j < headers.length; j++) {
+                            item[headers[j].trim()] = data[j].trim();
+                        }
+
+                        const volume = parseFloat(item.volume);
+                        const volume_cumule = parseFloat(item.volume_cumule);  // Récupère le volume cumulé
+                        const timestamp = parseInt(item.timestamp);
+
+                        if (typeof volume === 'number' && !isNaN(volume) &&
+                            typeof volume_cumule === 'number' && !isNaN(volume_cumule) && // Vérifie que volume_cumule est un nombre valide
+                            typeof timestamp === 'number' && !isNaN(timestamp)) {
+
+                            gesboxData.push({ volume, volume_cumule, timestamp }); // Ajoute volume_cumule aux données
+                            updateHistoryTable(volume, volume_cumule, timestamp); // Met à jour le tableau avec volume_cumule
+                        } else {
+                            console.error("Données invalides :", item);
+                        }
+                    }
+                }
+                updateChart();
+            })
+            .catch(error => console.error('Erreur lors de la récupération des données:', error));
+    }
+
+    fetchDataFromGoogleSheets();
+    setInterval(fetchDataFromGoogleSheets, 60000);
 });
