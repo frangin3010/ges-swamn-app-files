@@ -106,34 +106,62 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Fonction pour mettre à jour le tableau d'historique
     function updateHistoryTable(data) {
-    historyTableBody.innerHTML = ''; // Efface l'historique précédent
+        historyTableBody.innerHTML = ''; // Efface l'historique précédent
 
-    let cumulativeVolume = 0; // Initialisation du volume cumulé
+        let cumulativeVolume = 0; // Initialisation du volume cumulé
 
-    data.forEach(item => {
-        if (typeof item.volume !== 'number' || typeof item.timestamp !== 'number') {
-            console.error("Données invalides :", item);
-            return;
+        data.forEach(item => {
+            if (typeof item.volume !== 'number' || typeof item.timestamp !== 'number') {
+                console.error("Données invalides :", item);
+                return;
+            }
+            const row = historyTableBody.insertRow();
+            const volumeCell = row.insertCell();
+            const cumulativeVolumeCell = row.insertCell();
+            const dateCell = row.insertCell();
+
+            cumulativeVolume += item.volume; // Ajoute le volume actuel au cumulatif
+
+            const date = new Date(item.timestamp * 1000); // Convertit le timestamp en date
+            volumeCell.textContent = item.volume.toFixed(2); // Affiche le volume avec 2 décimales
+            cumulativeVolumeCell.textContent = cumulativeVolume.toFixed(2); // Affiche le volume cumulé avec 2 décimales
+            dateCell.textContent = date.toLocaleString(); // Formate la date en anglais par défaut
+        });
+    }
+
+    // Récupération des données depuis Google Sheets
+    async function fetchDataFromGoogleSheets() {
+        const sheetId = "1-hUrnHF0h_8kR4lPk4OxkoJ894tNKZ3rI3z-aydpp2s"; // ID de votre feuille
+        const apiKey = "AIzaSyCUZvlXiW-EvSzAc1DQ-RJk7sPw640LYAQ"; // Votre API Key
+        const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/A1:D100?key=${apiKey}`;
+
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+            const rows = data.values.slice(1); // Ignorer la première ligne (en-têtes)
+
+            const formattedData = rows.map(row => ({
+                gesBoxId: row[0],
+                volume: parseFloat(row[1]),
+                timestamp: new Date(row[2]).getTime() / 1000,
+                cumulativeVolume: parseFloat(row[3])
+            })).filter(item => !isNaN(item.volume) && !isNaN(item.timestamp));
+
+            gesboxData = formattedData; // Met à jour les données globales
+            updateChart(); // Met à jour le graphique
+            updateHistoryTable(formattedData); // Met à jour le tableau d'historique
+        } catch (error) {
+            console.error("Erreur lors de la récupération des données :", error);
         }
-        const row = historyTableBody.insertRow();
-        const volumeCell = row.insertCell();
-        const cumulativeVolumeCell = row.insertCell();
-        const dateCell = row.insertCell();
+    }
 
-        cumulativeVolume += item.volume; // Ajoute le volume actuel au cumulatif
+    // Utilisation des données factices pour tester (décommentez si nécessaire)
+    // gesboxData = generateFakeData();
+    // updateChart();
+    // updateHistoryTable(gesboxData);
 
-        const date = new Date(item.timestamp * 1000); // Convertit le timestamp en date
-        volumeCell.textContent = item.volume.toFixed(2); // Affiche le volume avec 2 décimales
-        cumulativeVolumeCell.textContent = cumulativeVolume.toFixed(2); // Affiche le volume cumulé avec 2 décimales
-        dateCell.textContent = date.toLocaleString(); // Formate la date en anglais par défaut
-    });
-}
-
-    // Utilisation des données factices pour tester
-    gesboxData = generateFakeData();
-    console.log("Données factices chargées :", gesboxData);
-    updateChart();
-    updateHistoryTable(gesboxData);
+    // Appel initial pour charger les données depuis Google Sheets
+    fetchDataFromGoogleSheets();
 
     // Gestion sécurisée du sélecteur
     if (timeScaleSelect) {
