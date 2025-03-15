@@ -1,0 +1,118 @@
+/* Couleurs */
+:root {
+    --bleu-fonce: #1178B7;
+    --bleu-clair: #10B3D8;
+}
+
+/* Général */
+body {
+    font-family: sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+    color: #333;
+    line-height: 1.6;
+}
+
+/* Header */
+header {
+    background-color: var(--bleu-fonce);
+    color: white;
+    text-align: center;
+    padding: 1.5em 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Styles pour le logo */
+header img {
+    width: 75px;
+    height: 75px;
+    margin-right: 10px;
+    vertical-align: middle;
+}
+
+
+/* Contrôles */
+.controls {
+    background-color: white;
+    padding: 1.2em;
+    margin: 1em;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 0.8em;
+}
+
+.controls select {
+    padding: 0.5em;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+/* Graphique */
+.graph-container {
+    width: 95%;
+    max-width: 1200px;
+    margin: 0 auto;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 1.5em;
+    height: 400px;
+}
+
+#volumeChart {
+    max-width: 100%;
+    max-height: 350px;
+}
+
+/* Historique */
+.history {
+    background-color: white;
+    padding: 1.2em;
+    margin: 1em;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.history table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1em;
+}
+
+.history th,
+.history td {
+    padding: 0.8em;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+.history th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .controls {
+        margin: 0.5em;
+        padding: 0.8em;
+    }
+
+    .graph-container {
+        height: 300px;
+    }
+
+    #volumeChart {
+        max-height: 250px;
+    }
+
+    .history {
+        margin: 0.5em;
+        padding: 0.8em;
+    }
+}

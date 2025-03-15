@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ges'SMAWN Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Scripts dans l'ordre CRITIQUE -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+</head>
+<body>
+    <header>
+        <img src="logo.png" alt="Logo" style="width: 200px; height: 200px;">
+        <h1>Ges'SMAWN Dashboard</h1>
+    </header>
+    <div class="controls">
+        <label for="timeScale">Échelle de temps :</label>
+        <select id="timeScale">
+            <option value="hour">Heures</option>
+            <option value="day">Jours</option>
+            <option value="week">Semaines</option>
+            <option value="month">Mois</option>
+            <option value="year">Années</option>
+        </select>
+    </div>
+    <div class="graph-container">
+        <canvas id="volumeChart"></canvas>
+    </div>
+    <div class="history">
+        <h3>Historique des données</h3>
+        <table id="historyTable">
+            <thead>
+                <tr>
+                    <th>Volume (L)</th>
+                    <th>Volume Cumulé (L)</th> <!-- Nouvelle colonne -->
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <script src="app.js" defer></script>
+</body>
+</html>
