@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let gesboxData = [];
 
     // Remplacez cette URL par l'URL de votre feuille Google Sheets publiée au format CSV
-    const googleSheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTq76nAzQ1hHt1bcPoaq9Azm4LFdOEsnd7d7lXakDdCKdoOfpA-S1DXi52bsKLIRQU2aUrPFX3A-Mq6/pub?output=csv";
+    const googleSheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTq76nAzQ1hHt1bcPoaq9Azm4LFdOEsnd7d7lXakDdCKdoOfpA-S1DXi52bsKLIRQU2aUrPFX3A-Mq6/pubhtml";
 
     function updateChart() {
         const timeScale = timeScaleSelect.value;
@@ -111,11 +111,16 @@ document.addEventListener('DOMContentLoaded', () => {
         fetch(googleSheetURL)
             .then(response => response.text())
             .then(csvData => {
+                console.log("CSV Data brute :", csvData);  // Afficher les données CSV brutes
+
                 gesboxData = [];
                 historyTableBody.innerHTML = '';
 
                 const lines = csvData.split('\n');
+                console.log("Lignes :", lines); // Afficher les lignes
+
                 const headers = lines[0].split(',');
+                console.log("En-têtes :", headers); // Afficher les en-têtes
 
                 for (let i = 1; i < lines.length; i++) {
                     const data = lines[i].split(',');
@@ -124,6 +129,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         for (let j = 0; j < headers.length; j++) {
                             item[headers[j].trim()] = data[j].trim();
                         }
+
+                        console.log("Ligne traitée :", item); // Afficher chaque ligne traitée
 
                         const volume = parseFloat(item.volume);
                         const volume_cumule = parseFloat(item.volume_cumule);  // Récupère le volume cumulé
@@ -140,6 +147,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                     }
                 }
+
+                console.log("gesboxData final :", gesboxData); // Afficher les données finales
+
                 updateChart();
             })
             .catch(error => console.error('Erreur lors de la récupération des données:', error));
