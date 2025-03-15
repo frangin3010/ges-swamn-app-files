@@ -137,11 +137,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         console.log("Ligne traitée :", item);
 
-                        const volume = parseFloat(item.volume);
-                        const volume_cumule = parseFloat(item.volume_cumule);
-                        const timestamp = parseInt(item.timestamp);
+                        const volumeStr = item.volume;
+                        const volumeCumuleStr = item.volume_cumule;
+                        const timestampStr = item.timestamp;
 
-                        console.log(`Avant conversion - Volume: ${item.volume}, Volume Cumulé: ${item.volume_cumule}, Timestamp: ${item.timestamp}`);
+                        console.log(`Avant conversion - Volume: ${volumeStr}, Volume Cumulé: ${volumeCumuleStr}, Timestamp: ${timestampStr}`);
+
+                        const volume = parseFloat(volumeStr.replace(',', '.'));
+                        const volume_cumule = parseFloat(volumeCumuleStr.replace(',', '.'));
+                        const timestamp = parseInt(timestampStr);
+
                         console.log(`Après conversion - Volume: ${volume}, Volume Cumulé: ${volume_cumule}, Timestamp: ${timestamp}`);
 
                         if (typeof volume === 'number' && !isNaN(volume) &&
