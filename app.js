@@ -19,7 +19,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const timeScale = timeScaleSelect.value;
         if (chart) chart.destroy();
 
-        // Filtre les données valides
         const validData = data
             .filter(item => 
                 typeof item.timestamp === 'number' && 
@@ -105,7 +104,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
             const rows = data.values.slice(1); // Ignorer les en-têtes
 
-            // Formatage des données avec conversion des virgules et dates
             const formattedData = rows.map(row => ({
                 gesBoxId: row[0],
                 volume: parseFrenchDecimal(row[1]),
@@ -117,14 +115,13 @@ document.addEventListener('DOMContentLoaded', () => {
             );
 
             gesboxData = formattedData;
-            updateChart();
+            updateChart(formattedData);
             updateHistoryTable(formattedData);
         } catch (error) {
-            console.error("Erreur lors de la récupération :", error);
+            console.error("Erreur lors de la récupération des données :", error);
         }
     }
 
-    // Gestion du sélecteur
     if (timeScaleSelect) {
         timeScaleSelect.addEventListener('change', fetchDataFromGoogleSheets);
     } else {
