@@ -106,22 +106,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Fonction pour mettre à jour le tableau d'historique
     function updateHistoryTable(data) {
-        historyTableBody.innerHTML = ''; // Efface l'historique précédent
-        data.forEach(item => {
-            if (typeof item.volume !== 'number' || typeof item.timestamp !== 'number') {
-                console.error("Données invalides :", item);
-                return;
-            }
-            const row = historyTableBody.insertRow();
-            const volumeCell = row.insertCell();
-            const cumulativeVolumeCell = row.insertCell();
-            const dateCell = row.insertCell();
-            const date = new Date(item.timestamp * 1000);
-            volumeCell.textContent = item.volume.toFixed(2);
-            cumulativeVolumeCell.textContent = item.cumulativeVolume ? item.cumulativeVolume.toFixed(2) : 'N/A';
-            dateCell.textContent = date.toLocaleString();
-        });
-    }
+    historyTableBody.innerHTML = ''; // Efface l'historique précédent
+
+    let cumulativeVolume = 0; // Initialisation du volume cumulé
+
+    data.forEach(item => {
+        if (typeof item.volume !== 'number' || typeof item.timestamp !== 'number') {
+            console.error("Données invalides :", item);
+            return;
+        }
+        const row = historyTableBody.insertRow();
+        const volumeCell = row.insertCell();
+        const cumulativeVolumeCell = row.insertCell();
+        const dateCell = row.insertCell();
+
+        cumulativeVolume += item.volume; // Ajoute le volume actuel au cumulatif
+
+        const date = new Date(item.timestamp * 1000); // Convertit le timestamp en date
+        volumeCell.textContent = item.volume.toFixed(2); // Affiche le volume avec 2 décimales
+        cumulativeVolumeCell.textContent = cumulativeVolume.toFixed(2); // Affiche le volume cumulé avec 2 décimales
+        dateCell.textContent = date.toLocaleString(); // Formate la date en anglais par défaut
+    });
+}
 
     // Utilisation des données factices pour tester
     gesboxData = generateFakeData();
