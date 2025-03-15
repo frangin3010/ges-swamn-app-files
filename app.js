@@ -4,20 +4,51 @@ document.addEventListener('DOMContentLoaded', () => {
     const historyTableBody = document.querySelector('#historyTable tbody'); // Corps du tableau d'historique
     let chart;
 
-    function updateChart(data) {
+    // Données factices pour les tests
+    function generateFakeData() {
+        return [
+            { timestamp: 1717027200, volume: 0.65 }, // 30/05/2024 00:00
+            { timestamp: 1717027200 + 3600, volume: 0.75 }, // +1h
+            { timestamp: 1717027200 + 7200, volume: 0.80 } // +2h
+        ];
+    }
+
+    let gesboxData = []; // Initialisation des données
+
+    // Fonction pour mettre à jour le graphique
+    function updateChart() {
+        console.log("Appel de updateChart");
         const timeScale = timeScaleSelect.value;
-        if (chart) chart.destroy();
-        const validData = data
-            .filter(item => typeof item.timestamp === 'number' && typeof item.volume === 'number')
+        console.log("Échelle de temps sélectionnée :", timeScale);
+
+        if (chart) {
+            console.log("Destruction du graphique précédent");
+            chart.destroy();
+        }
+
+        console.log("Données brutes :", gesboxData);
+
+        const validData = gesboxData
+            .filter(item => 
+                typeof item.timestamp === 'number' && 
+                typeof item.volume === 'number'
+            )
             .sort((a, b) => a.timestamp - b.timestamp);
+
+        console.log("Données valides :", validData);
+
         if (validData.length === 0) {
             console.warn("Aucune donnée valide à afficher");
             return;
         }
+
         const dataPoints = validData.map(item => ({
             x: item.timestamp * 1000,
             y: item.volume
         }));
+
+        console.log("Points de données pour le graphique :", dataPoints);
+
         chart = new Chart(volumeChartCanvas, {
             type: 'line',
             data: {
@@ -69,8 +100,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         });
+
+        console.log("Graphique mis à jour");
     }
 
+    // Fonction pour mettre à jour le tableau d'historique
     function updateHistoryTable(data) {
         historyTableBody.innerHTML = ''; // Efface l'historique précédent
         data.forEach(item => {
@@ -84,41 +118,23 @@ document.addEventListener('DOMContentLoaded', () => {
             const dateCell = row.insertCell();
             const date = new Date(item.timestamp * 1000);
             volumeCell.textContent = item.volume.toFixed(2);
-            cumulativeVolumeCell.textContent = item.cumulativeVolume.toFixed(2);
+            cumulativeVolumeCell.textContent = item.cumulativeVolume ? item.cumulativeVolume.toFixed(2) : 'N/A';
             dateCell.textContent = date.toLocaleString();
         });
     }
 
-    async function fetchDataFromGoogleSheets() {
-        const sheetId = "1-hUrnHF0h_8kR4lPk4OxkoJ894tNKZ3rI3z-aydpp2s"; // ID de votre feuille
-        const apiKey = "AIzaSyCUZvlXiW-EvSzAc1DQ-RJk7sPw640LYAQ"; // Votre API Key
-        const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/A1:D100?key=${apiKey}`;
-
-        try {
-            const response = await fetch(url);
-            const data = await response.json();
-            const rows = data.values.slice(1); // Ignorer la première ligne (en-têtes)
-
-            const formattedData = rows.map(row => ({
-                gesBoxId: row[0],
-                volume: parseFloat(row[1]),
-                timestamp: new Date(row[2]).getTime() / 1000,
-                cumulativeVolume: parseFloat(row[3])
-            })).filter(item => !isNaN(item.volume) && !isNaN(item.timestamp));
-
-            updateChart(formattedData);
-            updateHistoryTable(formattedData);
-        } catch (error) {
-            console.error("Erreur lors de la récupération des données :", error);
-        }
-    }
+    // Utilisation des données factices pour tester
+    gesboxData = generateFakeData();
+    console.log("Données factices chargées :", gesboxData);
+    updateChart();
+    updateHistoryTable(gesboxData);
 
     // Gestion sécurisée du sélecteur
     if (timeScaleSelect) {
-        timeScaleSelect.addEventListener('change', fetchDataFromGoogleSheets);
+        timeScaleSelect.addEventListener('change', () => {
+            updateChart();
+        });
     } else {
         console.error("Élément timeScaleSelect non trouvé !");
     }
-
-    fetchDataFromGoogleSheets(); // Charge les données depuis Google Sheets
 });
