@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let gesboxData = [];
 
     // Remplacez cette URL par l'URL de votre feuille Google Sheets publiée au format CSV
-    const googleSheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTq76nAzQ1hHt1bcPoaq9Azm4LFdOEsnd7d7lXakDdCKdoOfpA-S1DXi52bsKLIRQU2aUrPFX3A-Mq6/pubhtml";
+    const googleSheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTq76nAzQ1hHt1bcPoaq9Azm4LFdOEsnd7d7lXakDdCKdoOfpA-S1DXi52bsKLIRQU2aUrPFX3A-Mq6/pub?output=csv";
 
     function updateChart() {
         const timeScale = timeScaleSelect.value;
@@ -16,8 +16,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const validData = gesboxData
             .filter(item =>
                 typeof item.timestamp === 'number' &&
-                typeof item.volume === 'number' &&  // volume est le volume instantané
-                typeof item.volume_cumule === 'number' // volume_cumule est le volume cumulé
+                typeof item.volume === 'number' &&
+                typeof item.volume_cumule === 'number'
             )
             .sort((a, b) => a.timestamp - b.timestamp);
 
@@ -28,14 +28,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const dataPoints = validData.map(item => ({
             x: item.timestamp * 1000,
-            y: item.volume_cumule  // Affiche le volume cumulé dans le graphique
+            y: item.volume_cumule
         }));
 
         chart = new Chart(volumeChartCanvas, {
             type: 'line',
             data: {
                 datasets: [{
-                    label: 'Volume Cumulé (L)', // Modifiez le label du graphique
+                    label: 'Volume Cumulé (L)',
                     data: dataPoints,
                     borderColor: 'blue',
                     fill: false,
@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     y: {
                         title: {
                             display: true,
-                            text: 'Volume d\'eau Cumulé (L)' // Modifiez le label de l'axe Y
+                            text: 'Volume d\'eau Cumulé (L)'
                         }
                     }
                 }
@@ -84,20 +84,20 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function updateHistoryTable(volume, volume_cumule, timestamp) {  // Ajoute volume_cumule
-        if (typeof volume !== 'number' || typeof volume_cumule !== 'number' || typeof timestamp !== 'number') { // Ajoute volume_cumule
-            console.error("Données invalides :", { volume, volume_cumule, timestamp }); // Ajoute volume_cumule
+    function updateHistoryTable(volume, volume_cumule, timestamp) {
+        if (typeof volume !== 'number' || typeof volume_cumule !== 'number' || typeof timestamp !== 'number') {
+            console.error("Données invalides :", { volume, volume_cumule, timestamp });
             return;
         }
 
         const row = historyTableBody.insertRow();
         const volumeCell = row.insertCell();
-        const volumeCumuleCell = row.insertCell();  // Nouvelle cellule pour le volume cumulé
+        const volumeCumuleCell = row.insertCell();
         const dateCell = row.insertCell();
 
         const date = new Date(timestamp * 1000);
-        volumeCell.textContent = volume.toFixed(2); // Affiche le volume instantané
-        volumeCumuleCell.textContent = volume_cumule.toFixed(2); // Affiche le volume cumulé
+        volumeCell.textContent = volume.toFixed(2);
+        volumeCumuleCell.textContent = volume_cumule.toFixed(2);
         dateCell.textContent = date.toLocaleString();
     }
 
@@ -111,16 +111,21 @@ document.addEventListener('DOMContentLoaded', () => {
         fetch(googleSheetURL)
             .then(response => response.text())
             .then(csvData => {
-                console.log("CSV Data brute :", csvData);  // Afficher les données CSV brutes
+                console.log("CSV Data brute :", csvData);
 
                 gesboxData = [];
                 historyTableBody.innerHTML = '';
 
                 const lines = csvData.split('\n');
-                console.log("Lignes :", lines); // Afficher les lignes
+                console.log("Lignes :", lines);
+
+                if (lines.length <= 1) {
+                    console.warn("Aucune donnée (en-têtes uniquement) dans le CSV.");
+                    return;
+                }
 
                 const headers = lines[0].split(',');
-                console.log("En-têtes :", headers); // Afficher les en-têtes
+                console.log("En-têtes :", headers);
 
                 for (let i = 1; i < lines.length; i++) {
                     const data = lines[i].split(',');
@@ -130,25 +135,28 @@ document.addEventListener('DOMContentLoaded', () => {
                             item[headers[j].trim()] = data[j].trim();
                         }
 
-                        console.log("Ligne traitée :", item); // Afficher chaque ligne traitée
+                        console.log("Ligne traitée :", item);
 
                         const volume = parseFloat(item.volume);
-                        const volume_cumule = parseFloat(item.volume_cumule);  // Récupère le volume cumulé
+                        const volume_cumule = parseFloat(item.volume_cumule);
                         const timestamp = parseInt(item.timestamp);
 
+                        console.log(`Avant conversion - Volume: ${item.volume}, Volume Cumulé: ${item.volume_cumule}, Timestamp: ${item.timestamp}`);
+                        console.log(`Après conversion - Volume: ${volume}, Volume Cumulé: ${volume_cumule}, Timestamp: ${timestamp}`);
+
                         if (typeof volume === 'number' && !isNaN(volume) &&
-                            typeof volume_cumule === 'number' && !isNaN(volume_cumule) && // Vérifie que volume_cumule est un nombre valide
+                            typeof volume_cumule === 'number' && !isNaN(volume_cumule) &&
                             typeof timestamp === 'number' && !isNaN(timestamp)) {
 
-                            gesboxData.push({ volume, volume_cumule, timestamp }); // Ajoute volume_cumule aux données
-                            updateHistoryTable(volume, volume_cumule, timestamp); // Met à jour le tableau avec volume_cumule
+                            gesboxData.push({ volume, volume_cumule, timestamp });
+                            updateHistoryTable(volume, volume_cumule, timestamp);
                         } else {
                             console.error("Données invalides :", item);
                         }
                     }
                 }
 
-                console.log("gesboxData final :", gesboxData); // Afficher les données finales
+                console.log("gesboxData final :", gesboxData);
 
                 updateChart();
             })
