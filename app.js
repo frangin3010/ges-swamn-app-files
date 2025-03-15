@@ -95,28 +95,42 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function fetchDataFromGoogleSheets() {
-        const sheetId = "1-hUrnHF0h_8kR4lPk4OxkoJ894tNKZ3rI3z-aydpp2s"; // ID de votre feuille
-        const apiKey = "AIzaSyCUZvlXiW-EvSzAc1DQ-RJk7sPw640LYAQ"; // Votre API Key
-        const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/A1:D100?key=${apiKey}`;
+    const sheetId = "1-hUrnHF0h_8kR4lPk4OxkoJ894tNKZ3rI3z-aydpp2s"; // ID de votre feuille
+    const apiKey = "AIzaSyCUZvlXiW-EvSzAc1DQ-RJk7sPw640LYAQ"; // Votre API Key
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/A1:D100?key=${apiKey}`;
 
-        try {
-            const response = await fetch(url);
-            const data = await response.json();
-            const rows = data.values.slice(1); // Ignorer la première ligne (en-têtes)
+    try {
+        console.log("Récupération des données depuis Google Sheets");
+        const response = await fetch(url);
+        console.log("Réponse reçue", response);
 
-            const formattedData = rows.map(row => ({
-                gesBoxId: row[0],
-                volume: parseFloat(row[1]),
-                timestamp: new Date(row[2]).getTime() / 1000,
-                cumulativeVolume: parseFloat(row[3])
-            })).filter(item => !isNaN(item.volume) && !isNaN(item.timestamp));
-
-            updateChart(formattedData);
-            updateHistoryTable(formattedData);
-        } catch (error) {
-            console.error("Erreur lors de la récupération des données :", error);
+        if (!response.ok) {
+            console.error("Erreur lors de la requête : ", response.statusText);
+            return;
         }
+
+        const data = await response.json();
+        console.log("Données brutes reçues", data);
+
+        const rows = data.values.slice(1); // Ignorer la première ligne (en-têtes)
+        console.log("Lignes extraites", rows);
+
+        const formattedData = rows.map(row => ({
+            gesBoxId: row[0],
+            volume: parseFloat(row[1]),
+            timestamp: new Date(row[2]).getTime() / 1000,
+            cumulativeVolume: parseFloat(row[3])
+        })).filter(item => !isNaN(item.volume) && !isNaN(item.timestamp));
+
+        console.log("Données formatées", formattedData);
+
+        gesboxData = formattedData; // Met à jour les données globales
+        updateChart(); // Met à jour le graphique
+        updateHistoryTable(formattedData); // Met à jour le tableau d'historique
+    } catch (error) {
+        console.error("Erreur lors de la récupération des données :", error);
     }
+}
 
     if (timeScaleSelect) {
         timeScaleSelect.addEventListener('change', fetchDataFromGoogleSheets);
