@@ -118,22 +118,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 return response.text();
             })
             .then(csvData => {
-                console.log("CSV Data brute :", csvData);
+                console.log("Données CSV brutes :", csvData);
 
                 gesboxData = [];
                 historyTableBody.innerHTML = '';
 
                 const lines = csvData.split('\n');
-                console.log("Lignes :", lines);
-
                 if (lines.length <= 1) {
                     console.warn("Aucune donnée (en-têtes uniquement) dans le CSV.");
                     return;
                 }
 
                 const headers = lines[0].split(',');
-                console.log("En-têtes :", headers);
-
                 for (let i = 1; i < lines.length; i++) {
                     const data = lines[i].split(',');
                     if (data.length === headers.length && data.every(cell => cell.trim() !== '')) {
@@ -142,24 +138,22 @@ document.addEventListener('DOMContentLoaded', () => {
                             item[headers[j].trim()] = data[j].trim();
                         }
 
-                        console.log("Ligne traitée :", item);
-
-                        const gesBoxId = item.gesBoxId; // Récupération de gesBoxId
-                        const volumeStr = item.volume;
-                        const volumeCumuleStr = item.volume_cumule;
+                        const gesBoxId = item.gesBoxId;
+                        const volumeStr = item.volume.replace(/,/g, '.'); // Remplacement des virgules par des points
+                        const volumeCumuleStr = item.volume_cumule.replace(/,/g, '.');
                         const timestampStr = item.timestamp;
 
-                        console.log(`Avant conversion - GesBoxId: ${gesBoxId}, Volume: ${volumeStr}, Volume Cumulé: ${volumeCumuleStr}, Timestamp: ${timestampStr}`);
+                        console.log("Avant conversion - GesBoxId:", gesBoxId, "Volume:", volumeStr, "Volume Cumulé:", volumeCumuleStr, "Timestamp:", timestampStr);
 
-                        const volume = parseFloat(volumeStr.replace(',', '.'));
-                        const volume_cumule = parseFloat(volumeCumuleStr.replace(',', '.'));
+                        const volume = parseFloat(volumeStr);
+                        const volume_cumule = parseFloat(volumeCumuleStr);
                         const timestamp = parseInt(timestampStr);
 
-                        console.log(`Après conversion - GesBoxId: ${gesBoxId}, Volume: ${volume}, Volume Cumulé: ${volume_cumule}, Timestamp: ${timestamp}`);
+                        console.log("Après conversion - GesBoxId:", gesBoxId, "Volume:", volume, "Volume Cumulé:", volume_cumule, "Timestamp:", timestamp);
 
                         if (!isNaN(volume) && !isNaN(volume_cumule) && !isNaN(timestamp)) {
-                            gesboxData.push({ gesBoxId, volume, volume_cumule, timestamp }); // Ajout de gesBoxId
-                            updateHistoryTable(gesBoxId, volume, volume_cumule, timestamp); // Passage de gesBoxId
+                            gesboxData.push({ gesBoxId, volume, volume_cumule, timestamp });
+                            updateHistoryTable(gesBoxId, volume, volume_cumule, timestamp);
                         } else {
                             console.warn("Ligne ignorée en raison de données invalides :", item);
                         }
@@ -167,7 +161,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 console.log("gesboxData final :", gesboxData);
-
                 updateChart();
             })
             .catch(error => {
