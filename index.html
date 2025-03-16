@@ -25,9 +25,15 @@
             <option value="month">Mois</option>
             <option value="year">Années</option>
         </select>
+    </div>
 
-        <!-- Menu déroulant pour sélectionner la GesBox -->
-        <label for="gesBoxSelect">Choisissez une GesBox :</label>
+    <div class="graph-container">
+        <canvas id="volumeChart"></canvas>
+    </div>
+
+    <!-- Menu déroulant pour filtrer l'historique -->
+    <div class="history-controls">
+        <label for="gesBoxSelect">Filtrer l'historique par GesBox :</label>
         <select id="gesBoxSelect">
             <option value="all">Toutes les GesBoxes</option>
             <option value="GesBox1">GesBox1</option>
@@ -35,16 +41,12 @@
         </select>
     </div>
 
-    <div class="graph-container">
-        <canvas id="volumeChart"></canvas>
-    </div>
-
     <div class="history">
         <h3>Historique des données</h3>
         <table id="historyTable">
             <thead>
                 <tr>
-                    <th>ID GesBox</th> <!-- Nouvelle colonne -->
+                    <th>ID GesBox</th>
                     <th>Volume (L)</th>
                     <th>Volume Cumulé (L)</th>
                     <th>Date</th>
