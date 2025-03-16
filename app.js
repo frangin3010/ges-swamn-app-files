@@ -129,19 +129,24 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
 
-                const headers = lines[0].split(',');
+                // Nettoyer les en-têtes
+                const headers = lines[0].split(',').map(header => header.trim());
+                console.log("En-têtes nettoyés :", headers);
+
                 for (let i = 1; i < lines.length; i++) {
                     const data = lines[i].split(',');
                     if (data.length === headers.length && data.every(cell => cell.trim() !== '')) {
                         const item = {};
                         for (let j = 0; j < headers.length; j++) {
-                            item[headers[j].trim()] = data[j].trim();
+                            item[headers[j]] = data[j].trim();
                         }
 
                         const gesBoxId = item.gesBoxId;
-                        const volumeStr = item.volume.replace(/,/g, '.'); // Remplacement des virgules par des points
-                        const volumeCumuleStr = item.volume_cumule.replace(/,/g, '.');
-                        const timestampStr = item.timestamp;
+
+                        // Nettoyer les valeurs numériques (supprimer les guillemets et remplacer les virgules)
+                        const volumeStr = item.volume.replace(/"/g, '').replace(/,/g, '.');
+                        const volumeCumuleStr = item.volume_cumule.replace(/"/g, '').replace(/,/g, '.');
+                        const timestampStr = item.timestamp.replace(/"/g, '');
 
                         console.log("Avant conversion - GesBoxId:", gesBoxId, "Volume:", volumeStr, "Volume Cumulé:", volumeCumuleStr, "Timestamp:", timestampStr);
 
