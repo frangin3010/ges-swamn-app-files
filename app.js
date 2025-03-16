@@ -15,9 +15,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const validData = gesboxData
             .filter(item =>
-                typeof item.timestamp === 'number' &&
                 typeof item.volume === 'number' &&
-                typeof item.volume_cumule === 'number'
+                typeof item.volume_cumule === 'number' &&
+                item.timestamp // On prendra toujours la valeur de timestamp
             )
             .sort((a, b) => a.timestamp - b.timestamp);
 
@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const dataPoints = validData.map(item => ({
-            x: item.timestamp * 1000,
+            x: new Date(item.timestamp).getTime(), // On va get les nouvelles Date en fonction des données
             y: item.volume_cumule
         }));
 
@@ -85,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateHistoryTable(volume, volume_cumule, timestamp) {
-        if (typeof volume !== 'number' || typeof volume_cumule !== 'number' || typeof timestamp !== 'number') {
+        if (typeof volume !== 'number' || typeof volume_cumule !== 'number') {
             console.error("Données invalides :", { volume, volume_cumule, timestamp });
             return;
         }
@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const volumeCumuleCell = row.insertCell();
         const dateCell = row.insertCell();
 
-        const date = new Date(timestamp * 1000);
+        const date = new Date(timestamp * 1000); // Convertit le timestamp en date
         volumeCell.textContent = volume.toFixed(2);
         volumeCumuleCell.textContent = volume_cumule.toFixed(2);
         dateCell.textContent = date.toLocaleString();
@@ -137,21 +137,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         console.log("Ligne traitée :", item);
 
-                        const volumeStr = item.volume;
+                         const volumeStr = item.volume;
                         const volumeCumuleStr = item.volume_cumule;
-                        const timestampStr = item.timestamp;
+                        const timestampStr = item.timestamp; // On va prendre les valeurs brutes
 
                         console.log(`Avant conversion - Volume: ${volumeStr}, Volume Cumulé: ${volumeCumuleStr}, Timestamp: ${timestampStr}`);
 
                         const volume = parseFloat(volumeStr.replace(',', '.'));
                         const volume_cumule = parseFloat(volumeCumuleStr.replace(',', '.'));
-                        const timestamp = parseInt(timestampStr);
+                        const timestamp = item.timestamp; // On prend telle qu'elle est, on ne converti pas
 
                         console.log(`Après conversion - Volume: ${volume}, Volume Cumulé: ${volume_cumule}, Timestamp: ${timestamp}`);
 
                         if (typeof volume === 'number' && !isNaN(volume) &&
                             typeof volume_cumule === 'number' && !isNaN(volume_cumule) &&
-                            typeof timestamp === 'number' && !isNaN(timestamp)) {
+                            timestamp) { //On test uniquement si c'est bien défini
 
                             gesboxData.push({ volume, volume_cumule, timestamp });
                             updateHistoryTable(volume, volume_cumule, timestamp);
