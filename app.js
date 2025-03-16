@@ -143,10 +143,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         const gesBoxId = item.gesBoxId;
 
-                        // Nettoyer les valeurs numériques (supprimer les guillemets et remplacer les virgules)
-                        const volumeStr = item.volume.replace(/"/g, '').replace(/,/g, '.');
-                        const volumeCumuleStr = item.volume_cumule.replace(/"/g, '').replace(/,/g, '.');
-                        const timestampStr = item.timestamp.replace(/"/g, '');
+                        // Supprimer les guillemets autour des valeurs numériques
+                        const volumeStr = item.volume.replace(/"/g, '');
+                        const volumeCumuleStr = item.volume_cumule.replace(/"/g, '');
+                        const timestampStr = item.timestamp;
 
                         console.log("Avant conversion - GesBoxId:", gesBoxId, "Volume:", volumeStr, "Volume Cumulé:", volumeCumuleStr, "Timestamp:", timestampStr);
 
