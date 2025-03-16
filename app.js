@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 typeof item.volume_cumule === 'number' &&
                 item.timestamp // On prendra toujours la valeur de timestamp
             )
-            .sort((a, b) => a.timestamp - b.timestamp);
+            .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()); // Tri par timestamp
 
         if (validData.length === 0) {
             console.warn("Aucune donnée valide à afficher");
@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const dataPoints = validData.map(item => ({
-            x: new Date(item.timestamp).getTime(), // On va get les nouvelles Date en fonction des données
+            x: new Date(item.timestamp).getTime(), // Crée un objet Date à partir du timestamp
             y: item.volume_cumule
         }));
 
@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const volumeCumuleCell = row.insertCell();
         const dateCell = row.insertCell();
 
-        const date = new Date(timestamp * 1000); // Convertit le timestamp en date
+        const date = new Date(timestamp); // Convertit le timestamp en date
         volumeCell.textContent = volume.toFixed(2);
         volumeCumuleCell.textContent = volume_cumule.toFixed(2);
         dateCell.textContent = date.toLocaleString();
@@ -137,7 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         console.log("Ligne traitée :", item);
 
-                         const volumeStr = item.volume;
+                        const volumeStr = item.volume;
                         const volumeCumuleStr = item.volume_cumule;
                         const timestampStr = item.timestamp; // On va prendre les valeurs brutes
 
@@ -145,7 +145,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         const volume = parseFloat(volumeStr.replace(',', '.'));
                         const volume_cumule = parseFloat(volumeCumuleStr.replace(',', '.'));
-                        const timestamp = item.timestamp; // On prend telle qu'elle est, on ne converti pas
+                        const timestamp = item.timestamp; // On prend telle qu'elle est, on ne converti pas (C'EST TRES IMPORTANT!!)
 
                         console.log(`Après conversion - Volume: ${volume}, Volume Cumulé: ${volume_cumule}, Timestamp: ${timestamp}`);
 
