@@ -85,7 +85,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateHistoryTable(volume, volume_cumule, timestamp) {
-        if (typeof volume !== 'number' || typeof volume_cumule !== 'number') {
+         const date = new Date(timestamp); // Convertit le timestamp en date
+         console.log(typeof volume);
+        if (typeof volume !== 'number' || typeof volume_cumule !== 'number' ) {
             console.error("Données invalides :", { volume, volume_cumule, timestamp });
             return;
         }
@@ -95,7 +97,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const volumeCumuleCell = row.insertCell();
         const dateCell = row.insertCell();
 
-        const date = new Date(timestamp); // Convertit le timestamp en date
+       console.log("Timestamp", timestamp);
+         console.log(typeof volume, typeof volume_cumule, typeof timestamp)
         volumeCell.textContent = volume.toFixed(2);
         volumeCumuleCell.textContent = volume_cumule.toFixed(2);
         dateCell.textContent = date.toLocaleString();
